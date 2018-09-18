@@ -1,4 +1,4 @@
-# Sistemas Operacionais B é legal
+# Sistemas Operacionais B
 
 # Projeto #
 
