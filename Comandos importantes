@@ -1,0 +1,14 @@
+lsmod | grep <nome do modulo> //Lista todos modulos com aquele nome
+
+insmod <nome do modulo>.ko dyndbg// instala o modulo, dyndbg permite que debugs prints sejam habilitados no log do linux
+
+rmmod <nome do modulo> // remove o modulo
+
+journalctl --since "1 hour ago" | grep kernel // mostra o que ocorreu no log desde 1 hora atras
+
+dmesg // para ver as outputs dos modulos
+
+modprobe // comando utilizado com o mesmo intuito do insmod(iniciar um modulo), a difereca eh que o modprobe
+         // ira ver se o modulo possui um simbolo que nao e definido no kernel, caso ele achar, ele ira
+         // procurar no modulo search path modulos que definam esses simbolos, porem ele so fuincio com os
+         // modulos padroes instalados no diretorio de modulos.
