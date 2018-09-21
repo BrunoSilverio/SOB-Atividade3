@@ -43,6 +43,18 @@ MODULE_PARM_DESC(key,"A character string");
 
 static ssize_t device_read(struct file *filp, char *buffer, size_t length,loff_t * offset)
 {
+	if(operacao == 'c'){
+		/*Retorna a o dado crifrado*/
+	}
+	else if(operacao == 'd'){
+		/*Retorna a o dado dedos hexadecimal decifrada*/
+	}
+	else if(operacao == 'h'){
+		/*Retorna a o resumo criptografico*/
+	}
+	else{
+			printk(KERN_INFO "Operacao invalida");
+	}
 	printk(KERN_INFO "arquivo lido");
 	return SUCCESS;
 }
@@ -77,18 +89,7 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len, lof
 
 static int device_open(struct inode *inode, struct file *file)
 {
-	if(operacao == 'c'){
-		/*Retorna a o dado crifrado*/
-	}
-	else if(operacao == 'd'){
-		/*Retorna a o dado dedos hexadecimal decifrada*/
-	}
-	else if(operacao == 'h'){
-		/*Retorna a o resumo criptografico*/
-	}
-	else{
-			printk(KERN_INFO "Operacao invalida");
-	}
+
 	printk(KERN_INFO "arquivo aberto");
 	return SUCCESS;
 }
