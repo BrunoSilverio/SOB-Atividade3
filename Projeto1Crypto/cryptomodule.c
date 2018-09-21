@@ -22,6 +22,10 @@ static struct miscdevice mdev = {
 
 static int Major;
 static struct class *cls;
+static short size_of_message;
+static char msg[BUF_LEN];
+static char operacao
+static char dados[128];
 
 static char *key;
 
@@ -40,25 +44,59 @@ MODULE_PARM_DESC(key,"A character string");
 static ssize_t device_read(struct file *filp, char *buffer, size_t length,loff_t * offset)
 {
 	printk(KERN_INFO "arquivo lido");
-	return 0;
+	return SUCCESS;
 }
 
 static ssize_t device_write(struct file *filp, const char *buff, size_t len, loff_t * off)
 {
-	printk(KERN_INFO "arquivo escrito");
-	return 0;
+	int i;
+
+	sprintf(msg, "%s(%zu letters)", buff, len);
+	size_of_message = strlen(msg);
+	operacao = msg[0];
+	for(i=0;i<size_of_message - 2;i++){
+		dados[i] = msg[i+2];
+	}
+
+	if(operacao == 'c' || operacao == 'C'){
+		/*Cifrar dados*/
+	}
+	else if(operacao == 'd' || operacao == 'D'){
+		/*Decifrar dados*/
+	}
+	else if(operacao == 'h'|| operacao == 'H'){
+		/*Resumo criptografico key*/
+	}
+	else{
+				printk(KERN_INFO "Operacao invalida");
+	}
+
+	printk(KERN_INFO "Operacao realizada");
+	return SUCCESS;
 }
 
 static int device_open(struct inode *inode, struct file *file)
 {
+	if(operacao == 'c'){
+		/*Retorna a o dado crifrado*/
+	}
+	else if(operacao == 'd'){
+		/*Retorna a o dado dedos hexadecimal decifrada*/
+	}
+	else if(operacao == 'h'){
+		/*Retorna a o resumo criptografico*/
+	}
+	else{
+			printk(KERN_INFO "Operacao invalida");
+	}
 	printk(KERN_INFO "arquivo aberto");
-	return 0;
+	return SUCCESS;
 }
 
 static int device_release(struct inode *inode, struct file *file)
 {
 	printk(KERN_INFO "arquivo liberado");
-	return 0;
+	return SUCCESS;
 }
 
 /* ---------------------------------------------------------------- */
@@ -81,7 +119,7 @@ static int __init cryptomodule_init(void)
 	/*Cria o Device na /dev*/
 	device_create(cls, NULL, MKDEV(Major, 0), NULL, DEVICE_NAME);
 
-	//pr_info("%s\n", key); /*Print para ver se o programa recebe a key*/
+	pr_info("%s\n", key); /*Print para ver se o programa recebe a key*/
 	pr_info("Dispositivo criado em /dev/%s\n", DEVICE_NAME); /* OK */
 
 	  return SUCCESS;

@@ -26,6 +26,7 @@
 
 #define DEVICE_NAME "cryptomodule"
 #define DISK_SIZE 4096
+#define BUF_LEN 130
 #define SUCCESS 0
 
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
