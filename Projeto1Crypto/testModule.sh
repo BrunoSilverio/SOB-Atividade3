@@ -10,10 +10,14 @@ if [ $(id -un) != "root" ]; then
    exit 1
 fi;
 
-#install the module
+#Remove Modulo
+rmmod cryptomodule
+read -p "Continuar ... "
+echo -e "----------------------------------------------"
 
+#install the module
 echo -e "instala o modulo\n"
-echo -e "# insmod device.ko\n"
+echo -e "# insmod cryptomodule.ko\n"
 insmod cryptomodule.ko key="1"
 read -p "Continuar ... "
 echo -e "----------------------------------------------"
@@ -39,8 +43,8 @@ echo -e "----------------------------------------------"
 
 # write once and read again from /dev/fisl15rd 
 echo -e "escreve uma vez e lê de novo 5x a partir de /dev/teste\n"
-echo -e "# echo \"0123456789ABCDEF\" > /dev/teste\n"
-echo "c 0123456789ABCDEF" > /dev/cryptomodule
+echo -e "# echo \"0123456789ABCDEF\" > /dev/cryptomodule\n"
+echo -e "c 0123456789ABCDEF" > /dev/cryptomodule
 
 echo "# for i in {1..5}; do cat /dev/teste; echo -e \"\\n\"; done;"
 echo -e "\n"
@@ -62,8 +66,8 @@ echo -e "----------------------------------------------"
 
 #remove the module 
 echo -e "remove o module\n"
-echo -e "# rmmod device.ko\n"
-rmmod device.ko
+echo -e "# rmmod cryptomodule.ko\n"
+rmmod cryptomodule.ko
 read -p "Continuar ... "
 echo -e "----------------------------------------------"
 

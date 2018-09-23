@@ -12,3 +12,5 @@ modprobe // comando utilizado com o mesmo intuito do insmod(iniciar um modulo), 
          // ira ver se o modulo possui um simbolo que nao e definido no kernel, caso ele achar, ele ira
          // procurar no modulo search path modulos que definam esses simbolos, porem ele so fuincio com os
          // modulos padroes instalados no diretorio de modulos.
+
+chmod -R 777 <nome da pasta/arquivo> // Da permicao total a toda a pasta
