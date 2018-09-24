@@ -24,7 +24,7 @@ static int Major;
 static struct class *cls;
 static short size_of_message;
 static char msg[BUF_LEN];
-static char operacao
+static char operacao;
 static unsigned char dados[TAMMAX];
 unsigned char dadosHex[TAMMAX/2];
 
@@ -64,27 +64,31 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len, lof
 {
 	int i,j;
 
-	sprintf(msg, "%s(%zu letters)", buff, len);
+	sprintf(msg, "%s", buff, len);
 	size_of_message = strlen(msg);
 	operacao = msg[0];
+
+	pr_info("msg  = %s", msg);
+	pr_info("Operacao = %c", msg[0]);
+	pr_info("size_of_message = %i", size_of_message);
+
 	for(i=0;i<size_of_message - 2;i++){
 		if(!( // Se c não pertencer '0' <= c <= '9' ou 'A' <= c <= 'F'
             (msg[i+2] >= '0' && msg[i+2] <= '9') ||
-            (msg[i+2] >= 'A' && msg[i+2] <= 'F') ||
-            msg[i+2] == EOF
+            (msg[i+2] >= 'A' && msg[i+2] <= 'F')  
         )){ // caracter nao faz parte do conjunto permitido
-            printk(KERN_ERR "%u Caracter Inválido!\n", msg[i+2]);
+            printk(KERN_ERR "%c Caracter Inválido!\n", msg[i+2]);
             return -1;
         }
 		 else{ // se fizer parte do conjunto permitido
-            if(msg[i+2] == EOF || msg[i+2] == 0){ // Se chegar até o final do arquivo e não completou vetor, preencher com '0'
+            if(msg[i+2] == 3 || msg[i+2] == 4 || msg[i+2] == 0){ // Se chegar até o final do arquivo e não completou vetor, preencher com '0'
                 for(j = i; j < TAMMAX; j++){
 					dados[i] = 0;
                 }
                 break;
             }
             else{ // Se não colocar caracter c no vetor;
-                if(c <= '9')
+                if(msg[i+2] <= '9')
 					dados[i] = msg[i+2] - 48;
                 else
 					dados[i] = msg[i+2] - 55;
@@ -93,10 +97,11 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len, lof
 	}
 	//shiftConcat(sizeof(hex));
 	//Printar para teste
-	for(i = 0; i < TAMMAX; i++){
-		pr_info("%c", dados[i]);
-	}
 
+	/*for(i = 0; i < TAMMAX; i++){
+		pr_info("%c", dados[i]);
+	}*/
+	
 
 
 	if(operacao == 'c' || operacao == 'C'){
