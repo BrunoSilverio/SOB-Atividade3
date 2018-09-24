@@ -60,6 +60,27 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length,loff_t
 	return SUCCESS;
 }
 
+static void shiftConcat(size_t const size){
+    unsigned char byte;
+    int i, j;
+
+    j = 0;
+    for(i = 0; i < size/2; i++){
+        dadosHex[i] = (dados[j] << 4) + dados[j+1];
+        j += 2;
+    }
+
+	// Para Printar -- Revomer depois
+	for(i = 0; i < size/2; i++){
+        for(j = 7; j >= 0; j--){
+             byte = (new[i] >> j) & 1;
+             pr_info("%u", byte);
+        }
+		pr_info( " ");
+    }
+    pr_info("\n");
+}
+
 static ssize_t device_write(struct file *filp, const char *buff, size_t len, loff_t * off)
 {
 	int i,j;
@@ -75,9 +96,9 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len, lof
 	for(i=0;i<size_of_message - 2;i++){
 		if(!( // Se c não pertencer '0' <= c <= '9' ou 'A' <= c <= 'F'
             (msg[i+2] >= '0' && msg[i+2] <= '9') ||
-            (msg[i+2] >= 'A' && msg[i+2] <= 'F')  
+            (msg[i+2] >= 'A' && msg[i+2] <= 'F') 
         )){ // caracter nao faz parte do conjunto permitido
-            printk(KERN_ERR "%c Caracter Inválido!\n", msg[i+2]);
+            printk(KERN_ERR "%u Caracter Inválido!\n", msg[i+2]);
             return -1;
         }
 		 else{ // se fizer parte do conjunto permitido
@@ -95,12 +116,8 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len, lof
             }
         }
 	}
-	//shiftConcat(sizeof(hex));
-	//Printar para teste
-
-	/*for(i = 0; i < TAMMAX; i++){
-		pr_info("%c", dados[i]);
-	}*/
+	
+	shiftConcat(sizeof(dados));
 	
 
 
