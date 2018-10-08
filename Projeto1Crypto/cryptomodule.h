@@ -7,22 +7,22 @@
  *
  */
 /*Ver o que cada biblioteca faz ou representa e comentar*/
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/fs.h>
-#include <linux/uaccess.h>
-#include <linux/errno.h>
-#include <linux/miscdevice.h>
-#include <linux/slab.h>
-#include <linux/crypto.h>
-#include <linux/device.h>
-#include <linux/cdev.h>
-#include <linux/irq.h>
-#include <asm/uaccess.h>
-#include <asm/irq.h>
-#include <asm/io.h>
-#include <linux/poll.h>
+#include <linux/kernel.h>         //Necessario para para fazer a build do module e função printk
+#include <linux/init.h>           //Necessario para usar macro das funções init_module e cleanup_module...
+#include <linux/module.h>         //Necessario para todo modulo de kernel
+#include <linux/fs.h>             //para usar file_operations
+#include <linux/uaccess.h>	      //Para acessar a memoria do usuario.
+#include <linux/errno.h>          //biblioteca para exibir os erros
+#include <linux/miscdevice.h>     //Permite o uso de um misc device(declaração de um driver novo)
+#include <linux/slab.h>           //Permite o uso do kmalloc e do kfree
+#include <linux/crypto.h>         //biblioteca para encriptar
+#include <linux/device.h>         //controle de um dispositivo
+#include <linux/cdev.h>		        //Dispositivo do tipo de caracteres, usado para gravar-lo no sistema e identificar o dispositivo.
+#include <linux/irq.h>		        //Interrupção a qual a notificação se aplica.
+#include <asm/uaccess.h>	        //Acesso do usuario (ativando/desativando) macros.
+#include <asm/irq.h>		          //
+#include <asm/io.h>		            //Genérico IO read/write. Executa acesso Native-Endian.
+#include <linux/poll.h>		        //wait for some event on a file descriptor.
 
 #define DEVICE_NAME "cryptomodule"
 #define DISK_SIZE 4096
