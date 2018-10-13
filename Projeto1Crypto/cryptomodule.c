@@ -178,32 +178,30 @@ static int test_skcipher_encrypt(char *plaintext, char *password,
 	if (ret)
 		goto out;
 	pr_info("Encryption request successful\n");
+	ret = crypto_skcipher_decrypt(sk->req);//decripita o ciphertext dentro da scatterlist.
 out:
 	return ret;
 
 }
 int cryptoapi_init(void){
-	/* The world's favourite password */
-	//char *password = "password123";
+
 	sk.tfm = NULL;
 	sk.req = NULL;
 	sk.scratchpad = NULL;
 	sk.ciphertext = NULL;
 	sk.ivdata = NULL;
 
-	test_skcipher_encrypt("Testing", key, &sk);
+	test_skcipher_encrypt("Bora da um Role", key, &sk);
+  
+	char *ciphertext;
 	
-	char *buf;
+	//faz o calculo do endereco virtual utilizando o end de pagina e offset
+	ciphertext = sg_virt(&sk.sg);
 	
-	buf = sg_virt(&sk.sg);
+	/*printa o conteudo do endereço ao utilizar a funcao 
+	* decrypt retorna o chipertext decripitado.*/
+	pr_info("init encrypted : %s", ciphertext);
 	
-	pr_info("init encrypted = %s", buf);
-	
-
-	sg_copy_from_buffer(&sk.sg,1,aes_128_in, 16);
-
-	pr_info("init offset: %i",sk.req->dst->offset);
-	pr_info("init length: %i",sk.req->dst->length);
 	return 0;
 }
 void cryptoapi_exit(void){
