@@ -63,6 +63,8 @@ int main()
                 return errno;
             }
             printf("Mensagem recebida: [%s]\n", receive);
+            printf("Aberte ENTER para voltar ao menu..\n");
+            getchar();
             break;
         case 3:
             printf("Final do programa\n");
