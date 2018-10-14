@@ -110,7 +110,7 @@ static int test_skcipher_encrypt(char *plaintext, char *password,
 	unsigned char key[SYMMETRIC_KEY_LENGTH];
 	if (!sk->tfm)
 	{
-		sk->tfm = crypto_alloc_skcipher("cbc-aes-aesni", 0, 0);
+		sk->tfm = crypto_alloc_skcipher("ecb(aes)", 0, 0);
 		if (IS_ERR(sk->tfm))
 		{
 			pr_info("could not allocate skcipher handle\n");
@@ -172,9 +172,9 @@ static int test_skcipher_encrypt(char *plaintext, char *password,
 	init_completion(&sk->result.completion);
 	/* encrypt data */
 	ret = crypto_skcipher_encrypt(sk->req);
-	pr_info("1 cipher: %s", sk->scratchpad);
+	
 	ret = test_skcipher_result(sk, ret);
-	pr_info("2 cipher: %s", sk->scratchpad);
+
 	if (ret)
 		goto out;
 	pr_info("Encryption request successful\n");
