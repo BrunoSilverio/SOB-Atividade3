@@ -20,36 +20,56 @@ static char receive[BUFFER_LENGTH]; //buffer que ira receber a mensagem
 
 int main()
 {
-    int ret, fd;
+    int ret, fd, opcao;
     char stringToSend[BUFFER_LENGTH];
-    printf("Iniciando o modulo...\n");
-    fd = open("/dev/cryptomodule", O_RDWR); // Abrir o arquivo com permissao para escrita e leitura
-    if (fd < 0)
+
+    while (opcao != 3)
     {
-        perror("Erro ao iniciar o modulo...");
-        return errno;
-    }
-    printf("Digite a string que sera enviada:\n");
-    scanf("%[^\n]%*c", stringToSend); // String que sera envida para o modulo
-    printf("Escrevendo a mensagem no modulo [%s].\n", stringToSend);
-    ret = write(fd, stringToSend, strlen(stringToSend)); // envio da string para o modulo
-    if (ret < 0)
-    {
-        perror("Erro no envio da string.");
-        return errno;
+        printf("Opcao 1: Escrever no modulo\n");
+        printf("Opcao 2: Ler do modulo\n");
+        printf("Opcao 3: sair\n");
+
+        scanf("%i", opcao);
+
+        switch (opcao)
+        {
+        case 1:
+            printf("Iniciando o modulo...\n");
+            fd = open("/dev/cryptomodule", O_RDWR); // Abrir o arquivo com permissao para escrita e leitura
+            if (fd < 0)
+            {
+                perror("Erro ao iniciar o modulo...");
+                return errno;
+            }
+            printf("Digite a string que sera enviada:\n");
+            scanf("%[^\n]%*c", stringToSend); // String que sera envida para o modulo
+            printf("Escrevendo a mensagem [%s] no modulo .\n", stringToSend);
+            ret = write(fd, stringToSend, strlen(stringToSend)); // envio da string para o modulo
+            if (ret < 0)
+            {
+                perror("Erro no envio da string.");
+                return errno;
+            }
+            printf("Aberte ENTER para voltar ao menu..\n");
+            getchar();
+            break;
+
+        case 2:
+            printf("Lendo do modulo...\n");
+            ret = read(fd, receive, BUFFER_LENGTH); // Leitura do buffer
+            if (ret < 0)
+            {
+                perror("Erro na leitura da mensagem.");
+                return errno;
+            }
+            printf("Mensagem recebida: [%s]\n", receive);
+            break;
+        case 3:
+            printf("Final do programa\n");
+            break;
+        }
     }
 
-    printf("Aberte ENTER para ler a mensagem..\n");
-    getchar();
-
-    printf("Lendo do modulo...\n");
-    ret = read(fd, receive, BUFFER_LENGTH); // Leitura do buffer
-    if (ret < 0)
-    {
-        perror("Erro na leitura da mensagem.");
-        return errno;
-    }
-    printf("Mensagem recebida: [%s]\n", receive);
-    printf("Final do programa\n");
+    
     return 0;
 }
