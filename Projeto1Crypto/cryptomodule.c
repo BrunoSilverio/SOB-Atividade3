@@ -178,7 +178,7 @@ static int test_skcipher_encrypt(char *plaintext, char *password,
 	if (ret)
 		goto out;
 	pr_info("Encryption request successful\n");
-	ret = crypto_skcipher_decrypt(sk->req);//decripita o ciphertext dentro da scatterlist.
+	//ret = crypto_skcipher_decrypt(sk->req);//decripita o ciphertext dentro da scatterlist.
 out:
 	return ret;
 

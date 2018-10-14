@@ -19,33 +19,58 @@
 static char receive[BUFFER_LENGTH];     ///< The receive buffer from the LKM
  
 int main(){
-   int ret, fd;
-   char stringToSend[BUFFER_LENGTH];
-   printf("Starting device test code example...\n");
-   fd = open("/dev/cryptomodule", O_RDWR);             // Open the device with read/write access
-   if (fd < 0){
-      perror("Failed to open the device...");
-      return errno;
-   }
-   printf("Type in a short string to send to the kernel module:\n");
-   scanf("%[^\n]%*c", stringToSend);                // Read in a string (with spaces)
-   printf("Writing message to the device [%s].\n", stringToSend);
-   ret = write(fd, stringToSend, strlen(stringToSend)); // Send the string to the LKM
-   if (ret < 0){
-      perror("Failed to write the message to the device.");
-      return errno;
-   }
- 
-   printf("Press ENTER to read back from the device...\n");
-   getchar();
- 
-   printf("Reading from the device...\n");
-   ret = read(fd, receive, BUFFER_LENGTH);        // Read the response from the LKM
-   if (ret < 0){
-      perror("Failed to read the message from the device.");
-      return errno;
-   }
-   printf("The received message is: [%s]\n", receive);
-   printf("End of the program\n");
-   return 0;
+ int ret, fd, opcao;
+    char stringToSend[BUFFER_LENGTH];
+
+    while (opcao != 3)
+    {
+        printf("Opcao 1: Escrever no modulo\n");
+        printf("Opcao 2: Ler do modulo\n");
+        printf("Opcao 3: sair\n");
+
+        scanf("%i", &opcao);
+
+        switch (opcao)
+        {
+        case 1:
+            getchar();
+            printf("Iniciando o modulo...\n");
+            fd = open("/dev/cryptomodule", O_RDWR); // Abrir o arquivo com permissao para escrita e leitura
+            if (fd < 0)
+            {
+                perror("Erro ao iniciar o modulo...");
+                return errno;
+            }
+            printf("Digite a string que sera enviada:\n");
+            scanf("%[^\n]%*c", stringToSend); // String que sera envida para o modulo
+            printf("Escrevendo a mensagem [%s] no modulo .\n", stringToSend);
+            ret = write(fd, stringToSend, strlen(stringToSend)); // envio da string para o modulo
+            if (ret < 0)
+            {
+                perror("Erro no envio da string.");
+                return errno;
+            }
+            printf("Aberte ENTER para voltar ao menu..\n");
+            getchar();
+            break;
+
+        case 2:
+            printf("Lendo do modulo...\n");
+            ret = read(fd, receive, BUFFER_LENGTH); // Leitura do buffer
+            if (ret < 0)
+            {
+                perror("Erro na leitura da mensagem.");
+                return errno;
+            }
+            printf("Mensagem recebida: [%s]\n", receive);
+            printf("Aberte ENTER para voltar ao menu..\n");
+            getchar();
+            break;
+        case 3:
+            printf("Fim do programa\n");
+            break;
+        }
+    }
+    
+    return 0;
 }
