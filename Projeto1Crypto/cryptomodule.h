@@ -6,7 +6,7 @@
  * to access the node created inside /dev
  *
  */
-/*Ver o que cada biblioteca faz ou representa e comentar*/
+/*-------------------------------Bibliotecas---------------------------------------*/
 #include <linux/kernel.h>         //Necessario para para fazer a build do module e função printk
 #include <linux/init.h>           //Necessario para usar macro das funções init_module e cleanup_module...
 #include <linux/module.h>         //Necessario para todo modulo de kernel
@@ -25,7 +25,9 @@
 #include <linux/poll.h>		        //wait for some event on a file descriptor.
 
 #include <crypto/internal/skcipher.h>
+#include <crypto/internal/hash.h> 
 
+/*-------------------------------Defines---------------------------------------*/
 #define DEVICE_NAME "cryptomodule"
 #define DISK_SIZE 4096
 #define BUF_LEN 130
@@ -34,6 +36,10 @@
 
 #define SYMMETRIC_KEY_LENGTH 32
 #define CIPHER_BLOCK_SIZE 16
+
+#define SHA256_LENGTH (256/8) 
+
+/*-------------------------------Headers---------------------------------------*/
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
 
 static ssize_t device_write(struct file *, const char *, size_t, loff_t *);

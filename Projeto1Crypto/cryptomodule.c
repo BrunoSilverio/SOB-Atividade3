@@ -26,7 +26,8 @@ static char msg[BUF_LEN];
 static char operacao;
 static unsigned char dados[TAMMAX];
 unsigned char dadosHex[TAMMAX / 2];
-
+static char string_hash[SHA256_LENGTH * 2 + 1];
+static char *readMSG;
 static char *key;
 
 /*Cria um parametro para o modulo, com a permicao 0
@@ -58,7 +59,7 @@ struct skcipher_def{
 };
 
 static struct skcipher_def sk;
-
+/*-------------------------------Encrypt---------------------------------------*/
 static void test_skcipher_finish(struct skcipher_def *sk){
 	if (sk->tfm)
 		crypto_free_skcipher(sk->tfm);
@@ -178,7 +179,7 @@ static int test_skcipher_encrypt(char *plaintext, char *password,
 	if (ret)
 		goto out;
 	pr_info("Encryption request successful\n");
-	ret = crypto_skcipher_decrypt(sk->req);//decripita o ciphertext dentro da scatterlist.
+	//ret = crypto_skcipher_decrypt(sk->req);//decripita o ciphertext dentro da scatterlist.
 out:
 	return ret;
 
@@ -200,35 +201,69 @@ int cryptoapi_init(void){
 	
 	/*printa o conteudo do endereço ao utilizar a funcao 
 	* decrypt retorna o chipertext decripitado.*/
+
 	pr_info("init encrypted : %s", ciphertext);
+
 	
 	return 0;
 }
 void cryptoapi_exit(void){
 	test_skcipher_finish(&sk);
 }
+/*-------------------------------Decrypt---------------------------------------*/
 
-static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset){
-	if (operacao == 'c')
-	{
-		/*Retorna a o dado crifrado*/
-	}
-	else if (operacao == 'd')
-	{
-		/*Retorna a o dado dedos hexadecimal decifrada*/
-	}
-	else if (operacao == 'h')
-	{
-		/*Retorna a o resumo criptografico*/
-	}
-	else
-	{
-		printk(KERN_INFO "Operacao invalida");
-	}
-	printk(KERN_INFO "arquivo lido");
-	return SUCCESS;
+/*-------------------------------HASH------------------------------------------*/
+static void show_hash_result ( char * plaintext , char * hash_sha256 ) { 
+    int i ; 
+
+    pr_info("sha256 test for string: '%s'\n", plaintext);
+
+    for (i = 0; i < SHA256_LENGTH; i++)
+        sprintf(&string_hash[i*2], "%02x", (unsigned char)hash_sha256[i]);
+
+    string_hash[i * 2] = 0;
+
+    pr_info("%s\n", string_hash);
+}
+int cryptosha256_init(char *plaintext){
+
+    char hash_sha256[SHA256_LENGTH];
+
+    struct crypto_shash *sha256;
+
+    struct shash_desc *shash;  //Make and install the module: And you should see that the hash was calculated for the test string. Finally, remove the test module: Symmetric key encryption Here is an example of symmetrically encrypting a string using the AES algorithm and a password. sha256 = crypto_alloc_shash( "sha256" , 0, 0);
+    
+	sha256 = crypto_alloc_shash("sha256",0,0);
+
+    if (IS_ERR(sha256))
+        return -1;
+
+    shash = kmalloc(sizeof(struct shash_desc) + crypto_shash_descsize(sha256), GFP_KERNEL);
+   
+    if (!shash)
+        return -ENOMEM;
+    
+    shash->tfm = sha256;
+    shash->flags = 0;
+    
+    if (crypto_shash_init(shash))
+        return -1;
+    if (crypto_shash_update(shash, plaintext, strlen(plaintext)))
+        return -1;
+    if (crypto_shash_final(shash, hash_sha256))
+        return -1;
+  
+    kfree(shash);
+
+    crypto_free_shash(sha256);
+
+    show_hash_result(plaintext, hash_sha256);
+	
+    return 0;
 }
 
+
+/*-------------------------------Tramento entrada------------------------------------------*/
 static void shiftConcat(size_t const size){
 	unsigned char byte;
 	int i, j;
@@ -252,7 +287,56 @@ static void shiftConcat(size_t const size){
 	}*/
 	pr_info("\n");
 }
+/*-------------------------------Funcoes de W/R------------------------------------------*/
+static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset){
+	
+	int bytes_read = 0;
+	readMSG	= string_hash;
+	
+	if (operacao == 'c' || operacao == 'C')
+	{
+		/*Retorna a o dado crifrado*/
+	}
+	else if (operacao == 'd' || operacao == 'D')
+	{
+		/*Retorna a o dado dedos hexadecimal decifrada*/
+	}
+	else if (operacao == 'h' || operacao == 'H')
+	{
+		/*Retorna a o resumo criptografico*/
 
+		/*If we're at the end of the message,return 0 signifying end of file*/
+		
+		if (*readMSG == 0)
+        return 0;
+
+		/*
+     	* Actually put the data into the buffer
+     	*/
+	
+		while (length && *readMSG) {
+
+			/*
+			* The buffer is in the user data segment, not the kernel
+			* segment so "*" assignment won't work.  We have to use
+			* put_user which copies data from the kernel data segment to
+			* the user data segment.
+			*/
+		
+			put_user(*(readMSG++), buffer++);
+
+			length--;
+			bytes_read++;
+   		}
+		  
+	}
+	else
+	{
+		pr_info("Operacao invalida");
+	}
+	pr_info( "arquivo lido");
+	return bytes_read;
+}
 static ssize_t device_write(struct file *filp, const char *buff, size_t len, loff_t *off){
 	int i, j;
 
@@ -307,6 +391,9 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len, lof
 	else if (operacao == 'h' || operacao == 'H')
 	{
 		/*Resumo criptografico key*/
+		char *plaintext = "This is a test";
+	
+		cryptosha256_init(plaintext);
 	}
 	else
 	{
@@ -362,6 +449,7 @@ static void __exit cryptomodule_exit(void)
 {
 	/*Retira o device e a classe e
 	por fim retira o registro do major number*/
+	cryptoapi_exit();
 	device_destroy(cls, MKDEV(Major, 0));
 	class_destroy(cls);
 	unregister_chrdev(Major, DEVICE_NAME);
