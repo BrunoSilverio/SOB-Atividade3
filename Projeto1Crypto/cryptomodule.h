@@ -24,12 +24,16 @@
 #include <asm/io.h>		            //Genérico IO read/write. Executa acesso Native-Endian.
 #include <linux/poll.h>		        //wait for some event on a file descriptor.
 
+#include <crypto/internal/skcipher.h>
+
 #define DEVICE_NAME "cryptomodule"
 #define DISK_SIZE 4096
 #define BUF_LEN 130
 #define SUCCESS 0
 #define TAMMAX 100
 
+#define SYMMETRIC_KEY_LENGTH 32
+#define CIPHER_BLOCK_SIZE 16
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
 
 static ssize_t device_write(struct file *, const char *, size_t, loff_t *);
