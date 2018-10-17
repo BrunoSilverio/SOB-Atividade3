@@ -11,8 +11,8 @@ static char receive[BUFFER_LENGTH];     ///< The receive buffer from the LKM
 
 void stringtoHex(char *str);
 void getString(char *str);
-void readModule(char *str, int fd);
-void writeModule(int fd);
+void writeModule(char *str, int fd);
+void readModule(int fd);
 
 int main(){
  int fd, opcao;
@@ -38,17 +38,27 @@ int main(){
     // Get string
     switch(opcao){
         case 1:
-            stringtoHex(stringToSend);
+            getchar();
+            printf("String para Encriptar:\n");
+            scanf("%[^\n]%*c", stringToSend); // String que sera envida para o modulo
+            strcat(stringToSend,"s");//indica ao modulo que eh string
+            printf("String para Encriptar: %s\n",stringToSend);
             break;
         case 2:
-        case 3:
+            getchar();
+            printf("Digitar valor Hexadecimal:\n");
+            scanf("%[^\n]%*c", stringToSend); // String que sera envida para o modulo
+            strcat(stringToSend,"h");//indica ao modulo que eh valor hexadecimal
+            printf("Hexadecimal para Encriptar: %s\n",stringToSend);
+            break;
+        case 3://Perguntar para oque serve.
             getString(stringToSend);
             break;
         case 0:
             return 0;
             break;
     }
-    return 0;
+
     // Send String
     writeModule(stringToSend, fd);
     // Read Answer
@@ -56,24 +66,12 @@ int main(){
 
     return 0;
 }
-void stringtoHex(char *str){
-    char strAux[BUFFER_LENGTH/2];
-    int size = strlen(str);
 
-    printf("String para codificar:\n");
-    scanf("%s", str); // String que sera envida para o modulo
-    printf("%s\n", str);
-    int i;
-    for(i = 0; i < strlen(str); i++){
-        sprintf(&strAux[i*2], "%02X\n", str[i]);
-    }
-    str[i*2] = '\0';
-    strcpy(str, strAux);
-}
 void getString(char *str){
     scanf("%s",str);
 }
-void readModule(char *str, int fd){
+
+void writeModule(char *str, int fd){
     int ret;
     printf("Escrevendo a mensagem [%s] no modulo .\n", str);
     ret = write(fd, str, strlen(str)); // envio da string para o modulo
@@ -83,12 +81,11 @@ void readModule(char *str, int fd){
         printf("Erro no: %ls", &errno);
         return;
     }
-    printf("Aberte ENTER para ler a resposta..\n");
+    printf("Aperte ENTER para ler a resposta..\n");
     getchar();
-
 }
 
-void writeModule(int fd){
+void readModule(int fd){
     int ret;
     printf("Lendo do modulo...\n");
     ret = read(fd, receive, BUFFER_LENGTH); // Leitura do buffer
@@ -99,6 +96,6 @@ void writeModule(int fd){
         return;
     }
     printf("Mensagem recebida: [%s]\n", receive);
-    printf("Aberte ENTER para sair..\n");
+    printf("Aperte ENTER para sair..\n");
     getchar();
 }
