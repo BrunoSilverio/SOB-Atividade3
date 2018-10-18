@@ -180,7 +180,7 @@ static int test_skcipher_encrypt(char *plaintext, char *password,
 	/* encrypt data */
 	ret = crypto_skcipher_encrypt(sk->req);
 
-	ret = crypto_skcipher_decrypt(sk->req);//decripita o ciphertext dentro da scatterlist.
+	//ret = crypto_skcipher_decrypt(sk->req);//decripita o ciphertext dentro da scatterlist.
 	
 	ret = test_skcipher_result(sk, ret);
 	
@@ -202,7 +202,6 @@ int cryptoapi_init(void){
 	sk.ivdata = NULL;
 
 	char *ciphertext;
-	char aux[17] = {0x16,0x7f,0x0f,0x4b,0x37,0x16,0x08,0x0e,0x24,0x4a,0x5c,0x20,0x75,0x5e,0x40,0x07,'\0'};
 	int i;
 	test_skcipher_encrypt("bora da um role", key, &sk);
   
@@ -210,29 +209,23 @@ int cryptoapi_init(void){
 	
 	//char *strAux;
 	//faz o calculo do endereco virtual utilizando o end de pagina e offset
-	//ciphertext = sg_virt(&sk.sg);
+	ciphertext = sg_virt(&sk.sg);
 	
 	/*printa o conteudo do endereço ao utilizar a funcao 
 	* decrypt retorna o chipertext decripitado.*/
 	//sprintf(&strAux[i], "%2X\n", str[i]);	
-	/*for(i = 0; i < strlen(ciphertext); i++){
-		if(ciphertext[i] < 0){
- 			ciphertext[i] = ciphertext[i] * -1;
-		}
-	   	pr_info("init encrypted : %02x", ciphertext[i]);
-		if(i<16){
-			aux[i] = ciphertext[i];
-		}
+	for(i = 0; i < strlen(ciphertext); i++){
+	
+	   	pr_info("init encrypted : %02hhx , %i", ciphertext[i], i);
+	
     }
-	aux[16] ='\0';
 	//pr_info("init encrypted : %s", ciphertext);
-	pr_info("aux : %s", aux);*/
 	
 	//test_skcipher_dencrypt(aux, key, &sk);
 
-	ciphertext = sg_virt(&sk.sg);
+	// ciphertext = sg_virt(&sk.sg);
 
-	pr_info("init dencrypted : %s", ciphertext);
+	// pr_info("init dencrypted : %s", ciphertext);
 	return 0;
 }
 void cryptoapi_exit(void){
@@ -290,21 +283,6 @@ int cryptosha256_init(char *plaintext){
     return 0;
 }
 
-
-/*-------------------------------Tramento entrada------------------------------------------*/
-static void stringtoHex(char *str){
-    char strAux[BUF_LEN/2];
-    int size = strlen(str);
-
-    int i;
-    for(i = 0; i < strlen(str); i++){
-        sprintf(&strAux[i*2], "%02X\n", str[i]);
-    }
-    str[i*2] = '\0';
-	
-    strcpy(str, strAux);
-	pr_info("String em hexa = %s", str);
-}
 /*-------------------------------Funcoes de W/R------------------------------------------*/
 static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset){
 	
@@ -361,22 +339,18 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len, lof
 	sprintf(msg, "%s", buff, len);
 	size_of_message = strlen(msg);
 	operacao = msg[0];
-	tipo = msg[size_of_message - 1];
+	
 	pr_info("msg  = %s", msg);
 	pr_info("Operacao = %c", msg[0]);
 	pr_info("size_of_message = %i", size_of_message);
-	pr_info("Tipo dos dados = %c", tipo);
+	
 
-	for(i = 0;i < size_of_message - 3;i++)
+	for(i = 0;i < size_of_message - 2;i++)
 	{
 		msgPassada[i] = msg[i + 2];
 	}
 	msgPassada[i] = '\0';
 	pr_info("Msg recebida: %s",msgPassada);
-	if(tipo == 's'){
-		stringtoHex(msgPassada);
-	}
-	
 
 	if (operacao == 'c' || operacao == 'C')
 	{
