@@ -109,6 +109,7 @@ static int test_skcipher_encrypt(char *plaintext, char *password,
 								 struct skcipher_def *sk){
 	int ret = -EFAULT;
 	unsigned char key[SYMMETRIC_KEY_LENGTH];
+
 	if (!sk->tfm)
 	{
 		sk->tfm = crypto_alloc_skcipher("ecb(aes)", 0, 0);
@@ -128,13 +129,17 @@ static int test_skcipher_encrypt(char *plaintext, char *password,
 			goto out;
 		}
 	}
+
 	skcipher_request_set_callback(sk->req, CRYPTO_TFM_REQ_MAY_BACKLOG,
 								  test_skcipher_callback,
 								  &sk->result);
 	/* clear the key */
+
 	memset((void *)key, '\0', SYMMETRIC_KEY_LENGTH);
+
 	/* Use the world's favourite password */
 	sprintf((char *)key, "%s", password);
+
 
 	/* AES 256 with given symmetric key */
 	if (crypto_skcipher_setkey(sk->tfm, key, SYMMETRIC_KEY_LENGTH))
@@ -166,6 +171,7 @@ static int test_skcipher_encrypt(char *plaintext, char *password,
 			goto out;
 		}
 	}
+	pr_info("Plaintext: %s\n", plaintext);
 	sprintf((char *)sk->scratchpad, "%s", plaintext);
 	sg_init_one(&sk->sg, sk->scratchpad, CIPHER_BLOCK_SIZE);
 	skcipher_request_set_crypt(sk->req, &sk->sg, &sk->sg,
@@ -173,17 +179,20 @@ static int test_skcipher_encrypt(char *plaintext, char *password,
 	init_completion(&sk->result.completion);
 	/* encrypt data */
 	ret = crypto_skcipher_encrypt(sk->req);
+
+	ret = crypto_skcipher_decrypt(sk->req);//decripita o ciphertext dentro da scatterlist.
 	
 	ret = test_skcipher_result(sk, ret);
-
+	
 	if (ret)
 		goto out;
 	pr_info("Encryption request successful\n");
-	//ret = crypto_skcipher_decrypt(sk->req);//decripita o ciphertext dentro da scatterlist.
+	
 out:
 	return ret;
 
 }
+
 int cryptoapi_init(void){
 
 	sk.tfm = NULL;
@@ -192,19 +201,38 @@ int cryptoapi_init(void){
 	sk.ciphertext = NULL;
 	sk.ivdata = NULL;
 
-	test_skcipher_encrypt("Bora da um Role", key, &sk);
-  
 	char *ciphertext;
+	char aux[17] = {0x16,0x7f,0x0f,0x4b,0x37,0x16,0x08,0x0e,0x24,0x4a,0x5c,0x20,0x75,0x5e,0x40,0x07,'\0'};
+	int i;
+	test_skcipher_encrypt("bora da um role", key, &sk);
+  
 	
+	
+	//char *strAux;
 	//faz o calculo do endereco virtual utilizando o end de pagina e offset
-	ciphertext = sg_virt(&sk.sg);
+	//ciphertext = sg_virt(&sk.sg);
 	
 	/*printa o conteudo do endereço ao utilizar a funcao 
 	* decrypt retorna o chipertext decripitado.*/
-
-	pr_info("init encrypted : %s", ciphertext);
-
+	//sprintf(&strAux[i], "%2X\n", str[i]);	
+	/*for(i = 0; i < strlen(ciphertext); i++){
+		if(ciphertext[i] < 0){
+ 			ciphertext[i] = ciphertext[i] * -1;
+		}
+	   	pr_info("init encrypted : %02x", ciphertext[i]);
+		if(i<16){
+			aux[i] = ciphertext[i];
+		}
+    }
+	aux[16] ='\0';
+	//pr_info("init encrypted : %s", ciphertext);
+	pr_info("aux : %s", aux);*/
 	
+	//test_skcipher_dencrypt(aux, key, &sk);
+
+	ciphertext = sg_virt(&sk.sg);
+
+	pr_info("init dencrypted : %s", ciphertext);
 	return 0;
 }
 void cryptoapi_exit(void){
