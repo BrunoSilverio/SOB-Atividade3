@@ -103,6 +103,13 @@ int main(){
     // Read Answer
     readModule(fd);
 
+    printf("Finalizando o modulo...\n");
+    
+    if (close(fd))// Fechar o arquivo com permissao para escrita e leitura
+    {
+        perror("Erro ao fechar aquivo o modulo...");
+        return errno;
+    }
     return 0;
 }
 

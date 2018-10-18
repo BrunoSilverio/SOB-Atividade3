@@ -202,6 +202,7 @@ int cryptoapi_init(void){
 	sk.ivdata = NULL;
 
 	char *ciphertext;
+	char resultado[BUF_LEN];
 	int i;
 	test_skcipher_encrypt("bora da um role", key, &sk);
   
@@ -210,15 +211,25 @@ int cryptoapi_init(void){
 	//char *strAux;
 	//faz o calculo do endereco virtual utilizando o end de pagina e offset
 	ciphertext = sg_virt(&sk.sg);
+
 	
 	/*printa o conteudo do endereço ao utilizar a funcao 
 	* decrypt retorna o chipertext decripitado.*/
-	//sprintf(&strAux[i], "%2X\n", str[i]);	
+
+
 	for(i = 0; i < strlen(ciphertext); i++){
 	
-	   	pr_info("init encrypted : %02hhx , %i", ciphertext[i], i);
-	
+	  	sprintf(&resultado[i*2], "%02hhx", ciphertext[i]);
+		// strcat(resultado,strAux)
     }
+	resultado[i*2] = '\0';
+
+	pr_info("Resultado Cifrado: %s", resultado);
+	// for(i = 0; i < strlen(ciphertext); i++){
+	
+	//    	pr_info("init encrypted : %02hhx , %i", ciphertext[i], i);
+	
+    // }
 	//pr_info("init encrypted : %s", ciphertext);
 	
 	//test_skcipher_dencrypt(aux, key, &sk);
