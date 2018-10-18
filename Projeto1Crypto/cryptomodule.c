@@ -264,28 +264,18 @@ int cryptosha256_init(char *plaintext){
 
 
 /*-------------------------------Tramento entrada------------------------------------------*/
-static void shiftConcat(size_t const size){
-	unsigned char byte;
-	int i, j;
+static void stringtoHex(char *str){
+    char strAux[BUF_LEN/2];
+    int size = strlen(str);
 
-	j = 0;
-	for (i = 0; i < size / 2; i++)
-	{
-		dadosHex[i] = (dados[j] << 4) + dados[j + 1];
-		j += 2;
-	}
-
-	// Para Printar -- Revomer depois
-	/*for (i = 0; i < size / 2; i++)
-	{
-		for (j = 7; j >= 0; j--)
-		{
-			byte = (dadosHex[i] >> j) & 1;
-			pr_info("%u", byte);
-		}
-		pr_info(" ");
-	}*/
-	pr_info("\n");
+    int i;
+    for(i = 0; i < strlen(str); i++){
+        sprintf(&strAux[i*2], "%02X\n", str[i]);
+    }
+    str[i*2] = '\0';
+	
+    strcpy(str, strAux);
+	pr_info("String em hexa = %s", str);
 }
 /*-------------------------------Funcoes de W/R------------------------------------------*/
 static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset){
@@ -339,45 +329,26 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_
 }
 static ssize_t device_write(struct file *filp, const char *buff, size_t len, loff_t *off){
 	int i, j;
-
+	char  tipo, msgPassada[BUF_LEN];
 	sprintf(msg, "%s", buff, len);
 	size_of_message = strlen(msg);
 	operacao = msg[0];
-
+	tipo = msg[size_of_message - 1];
 	pr_info("msg  = %s", msg);
 	pr_info("Operacao = %c", msg[0]);
 	pr_info("size_of_message = %i", size_of_message);
+	pr_info("Tipo dos dados = %c", tipo);
 
-	for (i = 0; i < size_of_message - 2; i++)
+	for(i = 0;i < size_of_message - 3;i++)
 	{
-		if (!( // Se c não pertencer '0' <= c <= '9' ou 'A' <= c <= 'F'
-				(msg[i + 2] >= '0' && msg[i + 2] <= '9') ||
-				(msg[i + 2] >= 'A' && msg[i + 2] <= 'F')))
-		{ // caracter nao faz parte do conjunto permitido
-			printk(KERN_ERR "%u Caracter Inválido!\n", msg[i + 2]);
-			return -1;
-		}
-		else
-		{ // se fizer parte do conjunto permitido
-			if (msg[i + 2] == 3 || msg[i + 2] == 4 || msg[i + 2] == 0)
-			{ // Se chegar até o final do arquivo e não completou vetor, preencher com '0'
-				for (j = i; j < TAMMAX; j++)
-				{
-					dados[i] = 0;
-				}
-				break;
-			}
-			else
-			{ // Se não colocar caracter c no vetor;
-				if (msg[i + 2] <= '9')
-					dados[i] = msg[i + 2] - 48;
-				else
-					dados[i] = msg[i + 2] - 55;
-			}
-		}
+		msgPassada[i] = msg[i + 2];
 	}
-
-	shiftConcat(sizeof(dados));
+	msgPassada[i] = '\0';
+	pr_info("Msg recebida: %s",msgPassada);
+	if(tipo == 's'){
+		stringtoHex(msgPassada);
+	}
+	
 
 	if (operacao == 'c' || operacao == 'C')
 	{
