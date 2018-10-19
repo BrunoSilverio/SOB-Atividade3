@@ -512,7 +512,7 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len, lof
 	else if (operacao == 'h' || operacao == 'H')
 	{
 		/*Resumo criptografico key*/
-		char *plaintext = "This is a test";
+		char *plaintext = msgPassada;
 
 		cryptosha256_init(plaintext);
 	}
