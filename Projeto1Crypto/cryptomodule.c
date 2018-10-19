@@ -27,7 +27,9 @@ static char operacao;
 static unsigned char dados[TAMMAX];
 unsigned char dadosHex[TAMMAX / 2];
 static char string_hash[SHA256_LENGTH * 2 + 1];
+// static char resultado[BUF_LEN];
 static char *readMSG;
+static char *deciphertext;
 static char *key;
 
 /*Cria um parametro para o modulo, com a permicao 0
@@ -324,7 +326,7 @@ out:
 	return ret;
 }
 
-int cryptoapi_init(void)
+int cryptoapi_init(char *msgUser)
 {
 
 	sk.tfm = NULL;
@@ -334,12 +336,9 @@ int cryptoapi_init(void)
 	sk.ivdata = NULL;
 
 	char *ciphertext;
-	char *deciphertext;
-	char resultado[BUF_LEN];
-	char resultado2[BUF_LEN];
-	char resultadoCerto[BUF_LEN];
+	static char resultado[BUF_LEN];
 	int i;
-	test_skcipher_encrypt("Bora da um role", key, &sk);
+	test_skcipher_encrypt(msgUser, key, &sk);
 
 	//char *strAux;
 	//faz o calculo do endereco virtual utilizando o end de pagina e offset
@@ -358,29 +357,36 @@ int cryptoapi_init(void)
 
 	pr_info("Resultado Cifrado: %s", resultado);
 
-	shiftConcat(strlen(resultado),resultado,resultadoCerto);
+	readMSG = resultado;
+
+	return 0;
+}
+
+int decryptoapi_init(char *msgUser)
+{
+
+	sk.tfm = NULL;
+	sk.req = NULL;
+	sk.scratchpad = NULL;
+	sk.ciphertext = NULL;
+	sk.ivdata = NULL;
+
+	char resultadoCerto[BUF_LEN];
+	int i;
+
+	shiftConcat(strlen(msgUser),msgUser,resultadoCerto);
 
 	test_skcipher_dencrypt(resultadoCerto, key, &sk);
 
 	deciphertext = sg_virt(&sk.sg);
 
-
 	pr_info("Resultado decifrado: %s", deciphertext);
 
-	/*for(i = 0; i < strlen(ciphertext); i++){
-	
-	   	pr_info("init encrypted : %02hhx , %i", ciphertext[i], i);
-	
-     }*/
-	//pr_info("init encrypted : %s", ciphertext);
+	readMSG = deciphertext;
 
-	//test_skcipher_dencrypt(aux, key, &sk);
-
-	// ciphertext = sg_virt(&sk.sg);
-
-	// pr_info("init dencrypted : %s", ciphertext);
 	return 0;
 }
+
 void cryptoapi_exit(void)
 {
 	test_skcipher_finish(&sk);
@@ -400,6 +406,7 @@ static void show_hash_result(char *plaintext, char *hash_sha256)
 	string_hash[i * 2] = 0;
 
 	pr_info("%s\n", string_hash);
+	readMSG = string_hash;
 }
 int cryptosha256_init(char *plaintext)
 {
@@ -444,21 +451,8 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_
 {
 
 	int bytes_read = 0;
-	readMSG = string_hash;
 
-	if (operacao == 'c' || operacao == 'C')
-	{
-		/*Retorna a o dado crifrado*/
-	}
-	else if (operacao == 'd' || operacao == 'D')
-	{
-		/*Retorna a o dado dedos hexadecimal decifrada*/
-	}
-	else if (operacao == 'h' || operacao == 'H')
-	{
-		/*Retorna a o resumo criptografico*/
-
-		/*If we're at the end of the message,return 0 signifying end of file*/
+		pr_info("readMSG: %s", readMSG);
 
 		if (*readMSG == 0)
 			return 0;
@@ -482,11 +476,7 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_
 			length--;
 			bytes_read++;
 		}
-	}
-	else
-	{
-		pr_info("Operacao invalida");
-	}
+	
 	pr_info("arquivo lido");
 	return bytes_read;
 }
@@ -512,11 +502,12 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len, lof
 	if (operacao == 'c' || operacao == 'C')
 	{
 		/*Cifrar dados*/
-		cryptoapi_init();
+		cryptoapi_init(msgPassada);
 	}
 	else if (operacao == 'd' || operacao == 'D')
 	{
 		/*Decifrar dados*/
+		decryptoapi_init(msgPassada);
 	}
 	else if (operacao == 'h' || operacao == 'H')
 	{
