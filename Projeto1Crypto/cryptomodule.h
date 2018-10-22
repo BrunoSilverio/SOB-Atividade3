@@ -30,11 +30,11 @@
 /*-------------------------------Defines---------------------------------------*/
 #define DEVICE_NAME "cryptomodule"
 #define DISK_SIZE 4096
-#define BUF_LEN 130
+#define BUF_LEN 128
 #define SUCCESS 0
 #define TAMMAX 100
 
-#define SYMMETRIC_KEY_LENGTH 32
+#define SYMMETRIC_KEY_LENGTH 16
 #define CIPHER_BLOCK_SIZE 16
 
 #define SHA256_LENGTH (256/8) 

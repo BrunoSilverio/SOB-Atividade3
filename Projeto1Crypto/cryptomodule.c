@@ -11,11 +11,11 @@ static struct file_operations fops = {
 	.open = device_open,
 	.release = device_release};
 
-static struct miscdevice mdev = {
-	.minor = MISC_DYNAMIC_MINOR,
-	.name = DEVICE_NAME,
-	.fops = &fops,
-};
+// static struct miscdevice mdev = {
+// 	.minor = MISC_DYNAMIC_MINOR,
+// 	.name = DEVICE_NAME,
+// 	.fops = &fops,
+// };
 
 /* ---------------------------------------------------------------- */
 
@@ -24,13 +24,17 @@ static struct class *cls;
 static short size_of_message;
 static char msg[BUF_LEN];
 static char operacao;
-static unsigned char dados[TAMMAX];
+//static unsigned char dados[TAMMAX];
 unsigned char dadosHex[TAMMAX / 2];
 static char string_hash[SHA256_LENGTH * 2 + 1];
 // static char resultado[BUF_LEN];
 static char *readMSG;
 static char *deciphertext;
-static char *key;
+
+static char resultado[CIPHER_BLOCK_SIZE * 2 + 1];
+static char key[CIPHER_BLOCK_SIZE];
+static char *keyHex;
+static int size_of_hex_msg;
 
 /*Cria um parametro para o modulo, com a permicao 0
 o parametro so pode ser atribuido na hora do insmod*/
@@ -40,20 +44,31 @@ colocar a string com aspas duplas dentro de aspas simples
 EX: '"Hello Word"', nesse caso o shell vai pegar as aspas simples
 e mandar a string com aspas duplas para o modulo*/
 
-module_param(key, charp, 0);
-MODULE_PARM_DESC(key, "A character string");
+module_param(keyHex, charp, 0);
+MODULE_PARM_DESC(keyHex, "A character string in HEX");
 
+
+static void addPadding(char *stringNorm, int size){
+	int blockLimit = BUF_LEN;
+	int j;
+	for(j = 16; j < BUF_LEN; j += 16){
+		if(j >= size){
+			blockLimit = j;
+			break;
+		}
+	}
+	for(j = size; j < blockLimit; j++){
+		stringNorm[j] = 0;
+	}
+	
+}
 static void shiftConcat(size_t const size, char *stringHex, char *stringNorm)
 {
-	unsigned char byte;
 	int i, j;
 
 	// Transformar em valores hexa normal
-	for(i = 0; i < size; i++){
-		pr_info("%i ", stringHex[i]);
-	}
 	for (i = 0; i < size; i++)
-	{
+	{	
 		if ((int)stringHex[i] >= 48 && (int)stringHex[i] <= 57)
 			stringHex[i] -= (char)48;
 		else if ((int)stringHex[i] >= 97 && (int)stringHex[i] <= 102)
@@ -67,21 +82,16 @@ static void shiftConcat(size_t const size, char *stringHex, char *stringNorm)
 	// Concatenação em um unico byte
 	j = 0;
 	for (i = 0; i < size / 2; i++)
-	{
-		stringNorm[i] = (stringHex[j] << 4) + stringHex[j + 1];
+	{	
+		if(size%2 == 1 && i == size-1){
+			stringNorm[i] = (stringHex[j] << 4) + 0b00000000;
+			size_of_hex_msg++;
+		}
+		else{
+			stringNorm[i] = (stringHex[j] << 4) + stringHex[j + 1];
+		}
 		j += 2;
 	}
-	// Para Printar -- Revomer depois
-	for (i = 0; i < size / 2; i++)
-	{
-		for (j = 7; j >= 0; j--)
-		{
-			byte = (stringNorm[i] >> j) & 1;
-			pr_info("%u", byte);
-		}
-		pr_info(" ");
-	}
-	pr_info("\n");
 }
 /* ---------------------------------------------------------------- */
 
@@ -111,11 +121,11 @@ static void test_skcipher_finish(struct skcipher_def *sk)
 	if (sk->req)
 		skcipher_request_free(sk->req);
 	if (sk->ivdata)
-		kfree(sk->ivdata);
+		vfree(sk->ivdata);
 	if (sk->scratchpad)
-		kfree(sk->scratchpad);
+		vfree(sk->scratchpad);
 	if (sk->ciphertext)
-		kfree(sk->ciphertext);
+		vfree(sk->ciphertext);
 }
 static int test_skcipher_result(struct skcipher_def *sk, int rc)
 {
@@ -145,18 +155,19 @@ static int test_skcipher_result(struct skcipher_def *sk, int rc)
 static void test_skcipher_callback(struct crypto_async_request *req, int error)
 {
 	struct tcrypt_result *result = req->data;
-	int ret;
 	if (error == -EINPROGRESS)
 		return;
 	result->err = error;
 	complete(&result->completion);
-	pr_info("Encryption finished successfully result = %s\n", result->completion);
+	pr_info("Encryption finished successfully result\n");
 }
 static int test_skcipher_encrypt(char *plaintext, char *password,
 								 struct skcipher_def *sk)
 {
-	int ret = -EFAULT;
+	int ret = (int)(-EFAULT);
+	int i;
 	unsigned char key[SYMMETRIC_KEY_LENGTH];
+	pr_info("Encrypted");
 
 	if (!sk->tfm)
 	{
@@ -188,19 +199,21 @@ static int test_skcipher_encrypt(char *plaintext, char *password,
 	/* Use the world's favourite password */
 	sprintf((char *)key, "%s", password);
 
-	/* AES 256 with given symmetric key */
+	/* AES 128 with given symmetric key */
 	if (crypto_skcipher_setkey(sk->tfm, key, SYMMETRIC_KEY_LENGTH))
 	{
 		pr_info("key could not be set\n");
 		ret = -EAGAIN;
 		goto out;
 	}
-	pr_info("Symmetric key: %s\n", key);
+	for(i = 0; i < CIPHER_BLOCK_SIZE; i++) 
+		pr_info("key byte %i: %02hhX", i, key[i]);
+	// pr_info("Symmetric key: %s\n", key);
 	pr_info("Plaintext: %s\n", plaintext);
 	if (!sk->ivdata)
 	{
 		/* see https://en.wikipedia.org/wiki/Initialization_vector */
-		sk->ivdata = kmalloc(CIPHER_BLOCK_SIZE, GFP_KERNEL);
+		sk->ivdata = vmalloc(CIPHER_BLOCK_SIZE);
 		if (!sk->ivdata)
 		{
 			pr_info("could not allocate ivdata\n");
@@ -211,7 +224,7 @@ static int test_skcipher_encrypt(char *plaintext, char *password,
 	if (!sk->scratchpad)
 	{
 		/* The text to be encrypted */
-		sk->scratchpad = kmalloc(CIPHER_BLOCK_SIZE, GFP_KERNEL);
+		sk->scratchpad = vmalloc(CIPHER_BLOCK_SIZE);
 		if (!sk->scratchpad)
 		{
 			pr_info("could not allocate scratchpad\n");
@@ -223,6 +236,7 @@ static int test_skcipher_encrypt(char *plaintext, char *password,
 	sg_init_one(&sk->sg, sk->scratchpad, CIPHER_BLOCK_SIZE);
 	skcipher_request_set_crypt(sk->req, &sk->sg, &sk->sg,
 							   CIPHER_BLOCK_SIZE, sk->ivdata);
+	
 	init_completion(&sk->result.completion);
 	/* encrypt data */
 	ret = crypto_skcipher_encrypt(sk->req);
@@ -244,7 +258,6 @@ static int test_skcipher_dencrypt(char *plaintext, char *password,
 								 struct skcipher_def *sk)
 {
 	int ret = -EFAULT;
-	unsigned char key[SYMMETRIC_KEY_LENGTH];
 
 	if (!sk->tfm)
 	{
@@ -283,12 +296,12 @@ static int test_skcipher_dencrypt(char *plaintext, char *password,
 		ret = -EAGAIN;
 		goto out;
 	}
-	pr_info("Symmetric key: %s\n", key);
+	pr_info("SD key: %s\n", key);
 	pr_info("Plaintext: %s\n", plaintext);
 	if (!sk->ivdata)
 	{
 		/* see https://en.wikipedia.org/wiki/Initialization_vector */
-		sk->ivdata = kmalloc(CIPHER_BLOCK_SIZE, GFP_KERNEL);
+		sk->ivdata = vmalloc(CIPHER_BLOCK_SIZE);
 		if (!sk->ivdata)
 		{
 			pr_info("could not allocate ivdata\n");
@@ -299,7 +312,7 @@ static int test_skcipher_dencrypt(char *plaintext, char *password,
 	if (!sk->scratchpad)
 	{
 		/* The text to be encrypted */
-		sk->scratchpad = kmalloc(CIPHER_BLOCK_SIZE, GFP_KERNEL);
+		sk->scratchpad = vmalloc(CIPHER_BLOCK_SIZE);
 		if (!sk->scratchpad)
 		{
 			pr_info("could not allocate scratchpad\n");
@@ -328,6 +341,9 @@ out:
 
 int cryptoapi_init(char *msgUser)
 {
+	char *textInCipher;
+	char msgNorm[BUF_LEN + 1];
+	int i;
 
 	sk.tfm = NULL;
 	sk.req = NULL;
@@ -335,54 +351,58 @@ int cryptoapi_init(char *msgUser)
 	sk.ciphertext = NULL;
 	sk.ivdata = NULL;
 
-	char *ciphertext;
-	static char resultado[BUF_LEN];
-	int i;
-	test_skcipher_encrypt(msgUser, key, &sk);
+	shiftConcat(size_of_hex_msg,msgUser,msgNorm);
+	addPadding(msgNorm, size_of_hex_msg/2);
+	pr_info("norm: %s",msgNorm);
+	msgNorm[size_of_hex_msg/2] = '\0';
+	test_skcipher_encrypt(msgNorm, key, &sk);
 
-	//char *strAux;
 	//faz o calculo do endereco virtual utilizando o end de pagina e offset
-	ciphertext = sg_virt(&sk.sg);
+	textInCipher = sg_virt(&sk.sg);
 
-	/*printa o conteudo do endereço ao utilizar a funcao 
-	* decrypt retorna o chipertext decripitado.*/
+	for (i = 0; i < CIPHER_BLOCK_SIZE; i++){
 
-	for (i = 0; i < strlen(ciphertext); i++)
-	{
-
-		sprintf(&resultado[i * 2], "%02hhx", ciphertext[i]);
-		// strcat(resultado,strAux)
+		sprintf(&resultado[i * 2], "%02hhX", textInCipher[i]);
 	}
-	resultado[i * 2] = '\0';
-
+	resultado[i*2] = '\0';
+	
 	pr_info("Resultado Cifrado: %s", resultado);
 
+	
 	readMSG = resultado;
 
 	return 0;
 }
-
 int decryptoapi_init(char *msgUser)
 {
-
+	int i;
+	char msgNorm[BUF_LEN+1];
 	sk.tfm = NULL;
 	sk.req = NULL;
 	sk.scratchpad = NULL;
 	sk.ciphertext = NULL;
 	sk.ivdata = NULL;
 
-	char resultadoCerto[BUF_LEN];
-	int i;
-
-	shiftConcat(strlen(msgUser),msgUser,resultadoCerto);
-
-	test_skcipher_dencrypt(resultadoCerto, key, &sk);
+	shiftConcat(size_of_hex_msg,msgUser,msgNorm);
+	addPadding(msgNorm, size_of_hex_msg/2);
+	pr_info("norm: %s",msgNorm);
+	msgNorm[size_of_hex_msg/2] = '\0';
+	test_skcipher_dencrypt(msgNorm, key, &sk);
 
 	deciphertext = sg_virt(&sk.sg);
 
-	pr_info("Resultado decifrado: %s", deciphertext);
+	// for(i = 0; i < BLOCK_SIZE*2; i++)
+	// 	pr_info("Resultado decifrado: %02hhX", deciphertext[i]);
 
-	readMSG = deciphertext;
+	for (i = 0; i < CIPHER_BLOCK_SIZE; i++)
+	{
+
+		sprintf(&resultado[i * 2], "%02hhX", deciphertext[i]);
+		// strcat(resultado,strAux)
+	}
+	resultado[i*2] = '\0';
+
+	readMSG = resultado;
 
 	return 0;
 }
@@ -422,7 +442,7 @@ int cryptosha256_init(char *plaintext)
 	if (IS_ERR(sha256))
 		return -1;
 
-	shash = kmalloc(sizeof(struct shash_desc) + crypto_shash_descsize(sha256), GFP_KERNEL);
+	shash = vmalloc(sizeof(struct shash_desc) + crypto_shash_descsize(sha256));
 
 	if (!shash)
 		return -ENOMEM;
@@ -437,7 +457,7 @@ int cryptosha256_init(char *plaintext)
 	if (crypto_shash_final(shash, hash_sha256))
 		return -1;
 
-	kfree(shash);
+	vfree(shash);
 
 	crypto_free_shash(sha256);
 
@@ -482,9 +502,9 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_
 }
 static ssize_t device_write(struct file *filp, const char *buff, size_t len, loff_t *off)
 {
-	int i, j;
-	char tipo, msgPassada[BUF_LEN];
-	sprintf(msg, "%s", buff, len);
+	int i;
+	char msgPassada[BUF_LEN];
+	sprintf(msg, "%s", buff);
 	size_of_message = strlen(msg);
 	operacao = msg[0];
 
@@ -496,7 +516,9 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len, lof
 	{
 		msgPassada[i] = msg[i + 2];
 	}
+
 	msgPassada[i] = '\0';
+	size_of_hex_msg = size_of_message - 2;
 	pr_info("Msg recebida: %s", msgPassada);
 
 	if (operacao == 'c' || operacao == 'C')
@@ -543,6 +565,8 @@ static int device_release(struct inode *inode, struct file *file)
 /* Função que será chamada quando o modulo é instalado */
 static int __init cryptomodule_init(void)
 {
+	int keySize;
+	char aux[CIPHER_BLOCK_SIZE];
 	/*Faz uma requesicao para saber se o numero 0 pode ser */
 	/*usado como  Major number para o modulo*/
 	Major = register_chrdev(0, DEVICE_NAME, &fops);
@@ -559,7 +583,14 @@ static int __init cryptomodule_init(void)
 	/*Cria o Device na /dev*/
 	device_create(cls, NULL, MKDEV(Major, 0), NULL, DEVICE_NAME);
 
-	pr_info("%s\n", key);									 /*Print para ver se o programa recebe a key*/
+	pr_info("%s\n", keyHex);
+	keySize = strlen(keyHex);
+	
+	shiftConcat(keySize,keyHex,aux);
+	addPadding(aux, keySize/2);
+	memcpy(key, aux, CIPHER_BLOCK_SIZE);
+	//key[keySize/2] = '\0';	
+	//key[CIPHER_BLOCK_SIZE/2] = '\0';			 /*Print para ver se o programa recebe a key*/
 	pr_info("Dispositivo criado em /dev/%s\n", DEVICE_NAME); /* OK */
 
 	return SUCCESS;

@@ -7,4 +7,4 @@ echo -e "Removendo modulo"
 rmmod cryptomodule
 
 echo -e "Inserindo modulo"
-insmod cryptomodule.ko key='0123456789ABCDEF'
+insmod cryptomodule.ko keyHex='41414141414141414141414141414141'

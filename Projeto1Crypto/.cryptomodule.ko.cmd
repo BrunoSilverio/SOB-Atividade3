@@ -1,0 +1,1 @@
+cmd_/home/porta/Downloads/SOB-Atividade3/Projeto1Crypto/cryptomodule.ko := ld -r -m elf_x86_64 -z max-page-size=0x200000 -T ./scripts/module-common.lds --build-id  -o /home/porta/Downloads/SOB-Atividade3/Projeto1Crypto/cryptomodule.ko /home/porta/Downloads/SOB-Atividade3/Projeto1Crypto/cryptomodule.o /home/porta/Downloads/SOB-Atividade3/Projeto1Crypto/cryptomodule.mod.o ;  true
