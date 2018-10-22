@@ -96,9 +96,9 @@ struct skcipher_def
 	struct scatterlist sg;
 	struct crypto_skcipher *tfm;
 	struct skcipher_request *req;
-	struct tcrypt_result result; //verifica se a transformacao ocorreu com sucesso.
-	char *scratchpad;// ponteiro auxiliar
-	char *ciphertext;// string para a ser cifrada
+	struct tcrypt_result result;
+	char *scratchpad;
+	char *ciphertext;
 	char *ivdata;
 };
 
@@ -487,13 +487,12 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len, lof
 	sprintf(msg, "%s", buff, len);
 	size_of_message = strlen(msg);
 	operacao = msg[0];
-	tipo = msg[size_of_message - 1];
+
 	pr_info("msg  = %s", msg);
 	pr_info("Operacao = %c", msg[0]);
 	pr_info("size_of_message = %i", size_of_message);
-	pr_info("Tipo dos dados = %c", tipo);
 
-	for(i = 0;i < size_of_message - 3;i++)
+	for (i = 0; i < size_of_message - 2; i++)
 	{
 		msgPassada[i] = msg[i + 2];
 	}
