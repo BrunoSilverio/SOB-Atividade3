@@ -14,9 +14,24 @@ void getString(char *str);
 void writeModule(char *str, int fd);
 void readModule(int fd);
 
+void stringtoHex(char *str){
+    char strAux[strlen(str)*2];
+    int size = strlen(str);
+
+    int i;
+    for(i = 0; i < size; i++){
+        sprintf(&strAux[i*2], "%02hhX", str[i]);
+    }
+    str[i*2] = '\0';
+	
+    strcpy(str, strAux);
+	printf("String em hexa = %s \n", str);
+}
+
 int main(){
  int fd, opcao;
     char stringToSend[BUFFER_LENGTH];
+    char stringModulo[BUFFER_LENGTH];
 
     /*---------------------Open-file--------------------*/
     printf("Iniciando o modulo...\n");
@@ -29,9 +44,10 @@ int main(){
 
     // Menu
     printf("Menu:\n");
-    printf("1- Encriptar String\n");
-    printf("2- Encriptar Valores Hexadecimais\n");
-    printf("3- Decriptar\n");
+    printf("1- Cifrar String\n");
+    printf("2- Cifrar Valores Hexadecimais\n");
+    printf("3- Decifrar\n");
+    printf("4- Calcular Hash\n");    
     printf("0- Sair\n");
     scanf("%d", &opcao);
 
@@ -39,20 +55,43 @@ int main(){
     switch(opcao){
         case 1:
             getchar();
-            printf("String para Encriptar:\n");
+            printf("Digite a String para Encriptar:\n");
             scanf("%[^\n]%*c", stringToSend); // String que sera envida para o modulo
-            strcat(stringToSend,"s");//indica ao modulo que eh string
-            printf("String para Encriptar: %s\n",stringToSend);
+            stringtoHex(stringToSend);
+            printf("%s\n", stringToSend);
+            stringModulo[0] = 'c';
+            stringModulo[1] = ' '; 
+            strcat(stringModulo, stringToSend);//indica ao modulo que eh string
+            printf("String para Encriptar: %s\n",stringModulo);
             break;
         case 2:
             getchar();
             printf("Digitar valor Hexadecimal:\n");
             scanf("%[^\n]%*c", stringToSend); // String que sera envida para o modulo
-            strcat(stringToSend,"h");//indica ao modulo que eh valor hexadecimal
-            printf("Hexadecimal para Encriptar: %s\n",stringToSend);
+            stringModulo[0] = 'c';
+            stringModulo[1] = ' '; 
+            strcat(stringModulo, stringToSend);
+            printf("Hexadecimal para Encriptar: %s\n",stringModulo);
             break;
         case 3://Perguntar para oque serve.
-            getString(stringToSend);
+            getchar();
+            printf("Digitar valor Hexadecimal:\n");
+            scanf("%[^\n]%*c", stringToSend); // String que sera envida para o modulo
+            stringModulo[0] = 'd';
+            stringModulo[1] = ' '; 
+            strcat(stringModulo, stringToSend);
+            printf("Hexadecimal para Decifrar: %s\n",stringModulo);
+            break;
+        case 4://Perguntar para oque serve.
+            getchar();
+            printf("Digite a String para calcular o Hash:\n");
+            scanf("%[^\n]%*c", stringToSend); // String que sera envida para o modulo
+            stringtoHex(stringToSend);
+            printf("%s\n", stringToSend);
+            stringModulo[0] = 'h';
+            stringModulo[1] = ' '; 
+            strcat(stringModulo, stringToSend);//indica ao modulo que eh string
+            printf("String para Encriptar: %s\n",stringModulo);
             break;
         case 0:
             return 0;
@@ -60,10 +99,17 @@ int main(){
     }
 
     // Send String
-    writeModule(stringToSend, fd);
+    writeModule(stringModulo, fd);
     // Read Answer
     readModule(fd);
 
+    printf("Finalizando o modulo...\n");
+    
+    if (close(fd))// Fechar o arquivo com permissao para escrita e leitura
+    {
+        perror("Erro ao fechar aquivo o modulo...");
+        return errno;
+    }
     return 0;
 }
 
