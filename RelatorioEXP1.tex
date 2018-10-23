@@ -166,7 +166,6 @@ O programa em C possue um menu em que o usuário tem a opção de, encriptar uma
 
 O módulo, acionado após uma escrita em /dev/cryptomodule, recebe a string que o usuário proporcionou, e dependendo da primeira letra da string, faz a operação requisitada pelo o usuário, que pode ser, encriptação, desencriptação ou hash da string, e o modulo faz essas operações utilizando a biblioteca crypto.h.
 
-\vfill
 
 \section{Desafios Encontrados}
 
@@ -183,6 +182,8 @@ Durante o processo de desenvolvimento foram encontrados varios desafios:
 
 Essa dificuldade foi facilmente superada após estudo de códigos prontos disponibilizados pelo professor.
 Utilizamos a função write e read em C, aprendemos sobre essas funções durante a execução do experimento, pois até o momento todos integrantes só havim utilizados as funções fwrite e fread, o conceito é parecido, entretanto fread e fwrite só são utilizados para arquivos.
+
+\vfill
 
 \subsection{Trasformação de uma string com caracteres hexadecimais para sua sua representação original}
 
@@ -203,8 +204,51 @@ Esse problema não foi específico a uma função ou a uma lógica, mas sim a di
 \subsection{Scatterlist e como utiliza-las}
 Scatterlist é uma struct em que são armazenadas \textit{pagenumber}, \textit{offset} e \textit{size} que são todas as informções para encontrar uma variável na memória, esse método de armazenar os dados de uma variável é muito utilizada em módulos de kernel.\\
 Para resolver o problema de encontrar essa variável foi encontrado a função \textit{sg\_virt} que calcula o endereço da variável dando sua respectiva scatterlist, assim possibilitando a utilização dessa variável
-
+\vfill
+\clearpage
 
 \section{Conclusão}
+Resultados dos experimentos
+\subsection{Programa de Usuário em C}
+No programa de usuário foi criado um menu com cinco opções:
+\begin{enumerate}
+    \item Criptografar uma string.
+    \item Criptografar uma string em hexadecimal
+    \item Decriptografar uma string em hexadecimal
+    \item Gerar hash de uma string em hexadecimal
+    \item Sair
+\end{enumerate}
+\textbf{Criptografar uma string:}
+Essa opção faz com que o programa converta a string em ASCII para sua conversão em hexadecimal.
+E, então, escreve a string convertida, com o primeiro caracter 'c', no módulo \emph{/dev/cryptomodule}.
+\\
+\\
+\textbf{Criptografar uma string em hexadecimal:}
+Aqui o programa apenas escreve a string dada pelo usuário o módulo, também com o primeiro caracter 'c'.
+\\
+\\
+\textbf{Decriptografar uma string em hexadecimal:}
+Nessa opção também é feita a escrita, entretanto com 'd' como primeiro caracter.
+\\
+\\
+\textbf{Gerar hash de uma string em hexadecimal:}
+Aqui a escrita é feita direta, com um 'h' na primeira posição da string.
+\\
+\\
+\textbf{Sair:}
+Sair do programa sem realizar nenhuma operação.
+\\
+\\
+Em todas as opçõe, menos \emph{Sair}, o resultado é impresso no final da execução.
+
+\subsection{Módulo cryptomodule}
+No módulo, utilizando várias funções específicas de Kernel, a primeira coisa que o módulo faz é reverter a string de entrada, escrita pelo programa de usuário, então a string é tratada adicionando \emph{Padding} quando necessário.
+Depois do tratamento, utilizando o primeiro caracter para designar a função, direcionamos a string tratada à função certa equivalente a opção escolhida pelo usuário.
+\\\\
+O primerio problema que não foi possível contornar é quando a string dada pelo o usuário tem um tamanho real maior que 16 bytes. Já que esse é o tamanho do nosso bloco de encriptação, portanto não foi resolvido a necessidade de multiplas conversões.
+\\
+\\
+Após à execução das funções necessárias o resultado delas é escrito novamente no módulo, para que o programa de usuário possa ler os resultado das operações.
+
 
 \end{document}
