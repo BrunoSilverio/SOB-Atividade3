@@ -1,0 +1,210 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% University Assignment Title Page 
+% LaTeX Template
+% Version 1.0 (27/12/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% WikiBooks (http://en.wikibooks.org/wiki/LaTeX/Title_Creation)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+% 
+% Instructions for using this template:
+% This title page is capable of being compiled as is. This is not useful for 
+% including it in another document. To do this, you have two options: 
+%
+% 1) Copy/paste everything between \begin{document} and \end{document} 
+% starting at \begin{titlepage} and paste this into another LaTeX file where you 
+% want your title page.
+% OR
+% 2) Remove everything outside the \begin{titlepage} and \end{titlepage} and 
+% move this file to the same directory as the LaTeX file you wish to add it to. 
+% Then add \input{./title_page_1.tex} to your LaTeX file where you want your
+% title page.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\title{Title page with logo}
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{xkeyval}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\begin{document}
+
+\begin{titlepage}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for the horizontal lines, change thickness here
+
+\center % Center everything on the page
+ 
+%----------------------------------------------------------------------------------------
+%	HEADING SECTIONS
+%----------------------------------------------------------------------------------------
+
+\textsc{\LARGE Pontifícia Universidade Católica Campinas}\\[1.5cm] % Name of your university/college
+\textsc{\Large Engenharia de Computação}\\[0.5cm] % Major heading such as course name
+\textsc{\large Sistemas Operácionais B}\\[0.5cm] % Minor heading such as course title
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\HRule \\[0.4cm]
+{ \huge \bfseries Relatório Experimento 1}\\[0.4cm] % Title of your document
+\HRule \\[1.5cm]
+ 
+%----------------------------------------------------------------------------------------
+%	AUTHOR SECTION
+%----------------------------------------------------------------------------------------
+
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+\emph{Author:}\\
+Bruno Camilo \textsc{Silvério}
+Guilherme \textsc{Pernicone}
+João Pedro \textsc{Porta}
+Marcelo Dib \textsc{Coutinho}
+Pedro Pierina \textsc{Pierina}
+\end{flushleft}
+\end{minipage}
+~
+\begin{minipage}{0.4\textwidth}
+\begin{flushright} \large
+\emph{Supervisor:} \\
+Ms. Prof. Edmar Roberto Santana de \textsc{Resende} % Supervisor's Name
+\end{flushright}
+\end{minipage}\\[2cm]
+
+% If you don't want a supervisor, uncomment the two lines below and remove the section above
+%\Large \emph{Author:}\\
+%John \textsc{Smith}\\[3cm] % Your name
+
+%----------------------------------------------------------------------------------------
+%	DATE SECTION
+%----------------------------------------------------------------------------------------
+
+{\large \today}\\[2cm] % Date, change the \today to a set date if you want to be precise
+
+%----------------------------------------------------------------------------------------
+%	LOGO SECTION
+%----------------------------------------------------------------------------------------
+
+\includegraphics[width=26mm]{logo.jpg}% Include a department/university logo - this will require the graphicx package
+ 
+%----------------------------------------------------------------------------------------
+
+\vfill % Fill the rest of the page with whitespace
+
+\end{titlepage}
+
+
+\begin{abstract}
+Experimento com o objetivo de aprender e entender as dificuldades de criar e colocar em uso um modulo de Kernel do sitema operácional Ubuntu 16.04.
+\end{abstract}
+
+\section{Introdução}
+
+Nesse experimento, utilizando Ubuntu 16.04, foi criado um módulo que tem como objetivo utilizar a biblioteca crypto.h para cryptografar, decriptografar uma string dada pelo usuário atravéz de um programa de usuário, escrito em C, o programa de usuário comunica com o módulo atravéz da escrita e leitura no modulo /dev/cryptomodule 
+
+\section{Fundamentação Teórica}
+
+\subsection{Sistema Operacional (SO)}
+
+Um sistema operacional (SO) funciona como uma interface entre os usuários e o hardware, ele é um programa cuja a função é gerenciar os recursos do sistema, definindo quais programas devem receber a atenção do processador e é responsável por criar um sistema de arquivos a fim de indexar a memória. Além disso o SO também é responsável por fazer a comunicação entre os programas, periféricos e o hardware da máquina. 
+
+\subsection{Kernel}
+
+O kernel ou núcleo é o componente central do sistema operacional. Ele serve como ponte entre os aplicativos e o processamento real dos dados feito a nível de hardware. O kernel é responsável por gerenciar os recursos dos sistemas e oferecendo ajuda para que os aplicativos (softwares) utilizem esses recursos. Para isso ele é encarregado em fazer comunicação entre componentes de hardware e software, oferecendo uma camada de abstração de nível mais baixo para os recursos que os aplicativos devem controlar para executar suas ações. 
+
+\subsection{Linux}
+
+O linux é um sistema operacional de código fonte livre, sendo assim disponível para qualquer um utilizar e modificar, respeitando os termos de contrato. O linux foi criado baseando-se no sistema operacional Unix, pelo programador finlandês Linus Torvalds. Os sistemas operacionais linux são caracterizados por possuírem o núcleo kernel linux em suas maquinas. 
+
+\subsection{Driver}
+
+ É um desafio fornecer uma definição única e precisa para o termo driver. No sentido mais simples, um driver é um software que permite que o sistema operacional e um dispositivo se comuniquem um com o outro. Portanto, um driver é um software que traduz o que diz um hardware ou um dispositivo para que o computador possa entender. Sem um software de driver, o hardware conectado (por exemplo, uma placa de vídeo ou impressora) não funcionará corretamente.
+
+\subsection{Módulos}
+
+Em computação, um módulo carregável do núcleo, é um arquivo objeto que contém código para estender o núcleo em execução, ou o chamado núcleo base, de um sistema operacional. Os módulos são normalmente usados para adicionar suporte para novos hardwares (como controladores de dispositivos) e/ou sistemas de arquivos, ou para adicionar chamadas de sistema. Quando a funcionalidade fornecida por um módulo não for mais necessária, ela pode ser descarregada com o objetivo de liberar memória e outros recursos.
+
+\subsection{Electronic codebook (ECB)}
+
+O modo mais simples de criptografia é o electronic codebook (ECB). A mensagem é dividida em blocos e cada bloco é criptografado separadamente. A desvantagem deste método é que blocos idênticos de texto plano são criptografados em blocos de texto cifrado idênticos; assim, ele também não oculta padrões de dados. No geral, não oferece uma perfeita confidencialidade de mensagem, e não é recomendado para uso em protocolos criptográficos em geral.
+Eis aqui um bom exemplo do nível no qual o ECB pode transformar os padrões de dados de texto simples em texto cifrado.
+
+\subsection{Advanced Encryption Standard (AES)}
+
+AES é uma criptografia de blocos com chave simétrica (cifra de bloco) no caso o AES-128 foi utilizado, dessa forma trabalha com o sistema de blocos de 16 Bytes. É possível utilizar valores de entrada menores sem problemas, mas maiores será necessário dividir em blocos de 16B.
+
+\subsection{Hash}
+
+Funções hash criptográficas são operações matemáticas tendo um algoritmo de uma via, ou seja, é irreversível. É muito usado com senhas da seguinte forma: Primeiramente é gerado um Hash da senha e este, será apenas comparado ao Hash armazenado no destino. Caso os Hash’s sejam iguais, logo a senha é igual. Por exemplo: MD5, SHA-1, SHA-2.
+
+\subsection{SHA-256}
+
+SHA-256 e SHA-512 são funções Hash inovadoras computadas com palavras de 32 bytes e 64 bytes, respectivamente. Eles usam quantidades de deslocamento e constantes aditivas diferentes, mas as suas estruturas são praticamente idênticas, diferindo apenas no número de rodadas.
+
+
+\section{O que foi desenvolvido}
+
+\subsection{Progama de usuário em C}
+
+O programa em C possue um menu em que o usuário tem a opção de, encriptar uma string, encriptar escrevendo os bytes em hexadecimal, e decriptando utilizando tambem os valores dos bytes em hexadecimal, o programa então faz as escrita no módulo /dev/cryptomodule, inserindo no primeiro byte da string uma letra equivalente a operação a ser realizada, para então poder ler do mesmo módulo. O programa, também, se selecionado para encriptar um string comum, faz a conversão de uma string para um string com os valores originais representados em hexadecimal.
+
+\subsection{Módulo}
+
+O módulo, acionado após uma escrita em /dev/cryptomodule, recebe a string que o usuário proporcionou, e dependendo da primeira letra da string, faz a operação requisitada pelo o usuário, que pode ser, encriptação, desencriptação ou hash da string, e o modulo faz essas operações utilizando a biblioteca crypto.h.
+
+\vfill
+
+\section{Desafios Encontrados}
+
+Durante o processo de desenvolvimento foram encontrados varios desafios:
+
+\begin{enumerate}
+\item Comunicação entre programa de usuário e módulo
+\item Trasformação de uma string com caracteres hexadecimais para sua sua representação original
+\item Utilização da biblioteca crypto
+\item Scatterlist e como utiliza-las
+\end{enumerate}
+
+\subsection{Comunicação entre programa de usuário e módulo}
+
+Essa dificuldade foi facilmente superada após estudo de códigos prontos disponibilizados pelo professor.
+Utilizamos a função write e read em C, aprendemos sobre essas funções durante a execução do experimento, pois até o momento todos integrantes só havim utilizados as funções fwrite e fread, o conceito é parecido, entretanto fread e fwrite só são utilizados para arquivos.
+
+\subsection{Trasformação de uma string com caracteres hexadecimais para sua sua representação original}
+
+Para esse problema utilizamos manipulação de bits com a operação shifleft \textbf{\textless\textless}, e com com a subtração do caracter para o valor que ele representa utilizando os valores da \textit{ASCII Table}.
+\begin{flushleft}
+\begin{em}
+Ex.:\\
+4A      $\Rightarrow$ 00110100 01000001 : 2 caractéres\\
+4Ah     $\Rightarrow$ 00000100 00001010 : Caractéres subtraídos para o valor original em hexadecimal\\
+400Ah   $\Rightarrow$ 01000000 00001010 : O primero byte é shiftado 4 vezes\\
+J / 4Ah $\Rightarrow$ 00101010          : Os dois bytes são somados, gerando o valor original que os dois caractéres representavam \\ 
+\end{em}
+\end{flushleft}
+
+\subsection{Utilização da biblioteca crypto}
+Esse problema não foi específico a uma função ou a uma lógica, mas sim a diferentes mecânismos necessários para a utilização do modulo que o tornou complicado de utilizar, foi possível sua utilização atravez de estudos dos códigos prontos e vários testes. 
+
+\subsection{Scatterlist e como utiliza-las}
+Scatterlist é uma struct em que são armazenadas \textit{pagenumber}, \textit{offset} e \textit{size} que são todas as informções para encontrar uma variável na memória, esse método de armazenar os dados de uma variável é muito utilizada em módulos de kernel.\\
+Para resolver o problema de encontrar essa variável foi encontrado a função \textit{sg\_virt} que calcula o endereço da variável dando sua respectiva scatterlist, assim possibilitando a utilização dessa variável
+
+
+\section{Conclusão}
+
+\end{document}
